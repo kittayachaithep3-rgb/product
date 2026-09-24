@@ -80,15 +80,15 @@ export async function fetchProducts(
   const response = await fetch(buildProductUrl(query));
   console.log("สถานะตอบกลับแล้ว:", response);
 
-  // เติม: ค่าที่บอกว่าสถานะการตอบกลับอยู่ในช่วง 200 ถึง 299 หรือไม่
+  
   if (!response.ok) {
     throw new Error(`เรียกข้อมูลไม่สำเร็จ สถานะ ${response.status}`);
   }
 
-  // เติม: เมธอดที่อ่านเนื้อหาการตอบกลับเป็น JSON
+  
   const data = await response.json();
   console.log("ข้อมูลที่ได้รับจาก API:", data);
-  // เติม: เมธอดที่ตรวจข้อมูลแล้วคืนผลลัพธ์แทนการโยน Error
+  
   const result = ProductListSchema.safeParse(data);
 
   if (!result.success) {

@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { defaultQuery, fetchProducts } from "../lib/product";
 import type { Product, ProductList, SearchQuery } from "../lib/product";
+import ProductSearchForm from "./productsearchform"; 
+import ProductForm from "./productform";
+
+type ProductDraft = Omit<Product, "id">;
 
 type LoadState = "idle" | "loading" | "error" | "ready";
 
@@ -14,7 +18,6 @@ export default function ProductExplorer() {
     function showResult(list: ProductList) {
         setProducts(list.products);
         setStatus("ready");
-        console.log(products);
     }
 
     function showError(error: unknown) {
@@ -35,24 +38,39 @@ export default function ProductExplorer() {
         }
     }
 
+    // 2. ฟังก์ชันสำหรับบันทึก/เพิ่มสินค้าใหม่ลงใน State[cite: 7]
+    function saveProduct(draft: ProductDraft) {
+        const newProduct: Product = {
+            id: Date.now(), // สร้าง ID ชั่วคราว[cite: 7]
+            ...draft,
+        };
+        setProducts([...products, newProduct]); // อัปเดตรายการสินค้าเดิมรวมกับสินค้าใหม่[cite: 7]
+        setStatus("ready");
+    }
+
     return (
-        <main
-        >
+        <main>
             <h1>รายการสินค้า</h1>
             <p>
                 ดูข้อมูลสินค้า ราคา และรายละเอียดได้ในที่เดียว
             </p>
 
-            <button
-                type="button"
-                onClick={() => loadProducts(defaultQuery)}
-                disabled={status === "loading"}
-            >
-                {status === "loading" ? "กำลังโหลด" : "โหลดข้อมูล"}
-            </button>
+            {/* ส่วนสำหรับเพิ่มสินค้า */}
+            <h2>เพิ่มสินค้าใหม่</h2>
+            <ProductForm
+                editing={null}
+                onSave={saveProduct}
+                onCancel={() => {}}
+            />
+
+            <hr style={{ margin: "20px 0" }} />
+
+            {/* ส่วนสำหรับค้นหาสินค้า */}
+            <h2>ค้นหาสินค้า</h2>
+            <ProductSearchForm onSearch={loadProducts} />
 
             <section aria-live="polite">
-                {status === "idle" && <p>คลิกปุ่มโหลดข้อมูลเพื่อเริ่ม</p>}
+                {status === "idle" && <p>กรอกข้อมูลและคลิกปุ่มค้นหาเพื่อเริ่ม</p>}
 
                 {status === "loading" && <p>กำลังโหลดข้อมูล...</p>}
 
@@ -68,60 +86,60 @@ export default function ProductExplorer() {
 
                 {status === "ready" && products.length > 0 && (
                     <div>
-                    <table>
-                        <thead>
-                            <tr>
-                                {[
-                                    "รูปภาพ",
-                                    "ชื่อสินค้า",
-                                    "ราคา",
-                                    "คงเหลือ",
-                                    "หมวดหมู่",
-                                    "รายละเอียด",
-                                    "คะแนน",
-                                    "แท็ก",
-                                    "ส่วนลด (%)",
-                                ].map((heading) => (
-                                    <th key={heading}>
-                                        {heading}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map((item) => (
-                                <tr key={item.id}>
-                                    <td>
-                                        {item.thumbnail && (
-                                            <img
-                                                src={item.thumbnail}
-                                                alt={item.title}
-                                            />
-                                        )}
-                                    </td>
-                                    <td>{item.title}</td>
-                                    <td>{item.price} บาท</td>
-                                    <td>{item.stock}</td>
-                                    <td>{item.category}</td>
-                                    <td>{item.description}</td>
-                                    <td>⭐ {item.rating}</td>
-                                    <td>
-                                        {item.tags && item.tags.length > 0 && (
-                                            <ul>
-                                                {item.tags.map((tag, index) => (
-                                                    <li key={index}>{tag}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </td>
-                                    <td>{item.discountPercentage}%</td>
+                        <table>
+                            <thead>
+                                <tr>
+                                    {[
+                                        "รูปภาพ",
+                                        "ชื่อสินค้า",
+                                        "ราคา",
+                                        "คงเหลือ",
+                                        "หมวดหมู่",
+                                        "รายละเอียด",
+                                        "คะแนน",
+                                        "แท็ก",
+                                        "ส่วนลด (%)",
+                                    ].map((heading) => (
+                                        <th key={heading}>
+                                            {heading}
+                                        </th>
+                                    ))}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {products.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>
+                                            {item.thumbnail && (
+                                                <img
+                                                    src={item.thumbnail}
+                                                    alt={item.title}
+                                                />
+                                            )}
+                                        </td>
+                                        <td>{item.title}</td>
+                                        <td>{item.price} บาท</td>
+                                        <td>{item.stock}</td>
+                                        <td>{item.category}</td>
+                                        <td>{item.description}</td>
+                                        <td>⭐ {item.rating}</td>
+                                        <td>
+                                            {item.tags && item.tags.length > 0 && (
+                                                <ul>
+                                                    {item.tags.map((tag, index) => (
+                                                        <li key={index}>{tag}</li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </td>
+                                        <td>{item.discountPercentage}%</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 )}
-        </section>
-        </main >
+            </section>
+        </main>
     );
 }
